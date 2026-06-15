@@ -2,9 +2,14 @@ package com.tecsup.cookplan.data.repository
 
 import com.tecsup.cookplan.data.local.RecipeDao
 import com.tecsup.cookplan.data.local.RecipeEntity
+import com.tecsup.cookplan.data.remote.MealApiService
+import com.tecsup.cookplan.data.remote.dto.MealDto
 import kotlinx.coroutines.flow.Flow
 
-class RecipeRepository(private val recipeDao: RecipeDao) {
+class RecipeRepository(
+    private val recipeDao: RecipeDao,
+    private val apiService: MealApiService
+) {
     val allRecipes: Flow<List<RecipeEntity>> = recipeDao.getAllRecipes()
 
     suspend fun getRecipeById(id: Long): RecipeEntity? = recipeDao.getRecipeById(id)
@@ -16,4 +21,14 @@ class RecipeRepository(private val recipeDao: RecipeDao) {
     suspend fun deleteRecipe(recipe: RecipeEntity) = recipeDao.deleteRecipe(recipe)
 
     fun searchRecipes(query: String): Flow<List<RecipeEntity>> = recipeDao.searchRecipes(query)
+
+    // Remoto
+    suspend fun searchOnline(query: String): List<MealDto> {
+        return try {
+            val response = apiService.searchRecipes(query)
+            response.meals ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
 }

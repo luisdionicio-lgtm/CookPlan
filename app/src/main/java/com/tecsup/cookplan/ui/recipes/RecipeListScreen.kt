@@ -12,16 +12,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.viewmodel.RecipeListViewModel
+import com.tecsup.cookplan.viewmodel.RecipeListViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeListScreen(
-    viewModel: RecipeListViewModel = viewModel(),
     onAddClick: () -> Unit,
     onRecipeClick: (Long) -> Unit
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as CookPlanApplication).recipeRepository
+    val viewModel: RecipeListViewModel = viewModel(factory = RecipeListViewModelFactory(repository))
+
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -55,8 +61,9 @@ fun RecipeListScreen(
                 LazyColumn {
                     items(uiState.recipes) { recipe ->
                         ListItem(
-                            headlineContent = { Text(recipe) },
-                            modifier = Modifier.clickable { onRecipeClick(1L) } // Mock ID
+                            headlineContent = { Text(recipe.name) },
+                            supportingContent = { Text(recipe.ingredients.take(50) + "...") },
+                            modifier = Modifier.clickable { onRecipeClick(recipe.id) }
                         )
                     }
                 }

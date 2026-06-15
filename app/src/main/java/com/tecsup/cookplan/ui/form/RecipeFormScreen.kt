@@ -8,15 +8,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.viewmodel.RecipeFormViewModel
+import com.tecsup.cookplan.viewmodel.RecipeFormViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeFormScreen(
-    viewModel: RecipeFormViewModel = viewModel(),
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as CookPlanApplication).recipeRepository
+    val viewModel: RecipeFormViewModel = viewModel(factory = RecipeFormViewModelFactory(repository))
+
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -54,7 +60,7 @@ fun RecipeFormScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = uiState.ingredients,
-                onValueChange = { /* Actualizar ingredientes en VM */ },
+                onValueChange = { viewModel.onIngredientsChange(it) },
                 label = { Text("Ingredientes") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
@@ -62,7 +68,7 @@ fun RecipeFormScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = uiState.instructions,
-                onValueChange = { /* Actualizar instrucciones en VM */ },
+                onValueChange = { viewModel.onInstructionsChange(it) },
                 label = { Text("Instrucciones") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5

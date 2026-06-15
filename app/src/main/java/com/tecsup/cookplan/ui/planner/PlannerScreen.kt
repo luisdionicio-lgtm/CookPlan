@@ -6,14 +6,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.viewmodel.PlannerViewModel
+import com.tecsup.cookplan.viewmodel.PlannerViewModelFactory
 
 @Composable
-fun PlannerScreen(
-    viewModel: PlannerViewModel = viewModel()
-) {
+fun PlannerScreen() {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as CookPlanApplication).mealPlanRepository
+    val viewModel: PlannerViewModel = viewModel(factory = PlannerViewModelFactory(repository))
+    
     val uiState by viewModel.uiState.collectAsState()
     val days = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
 
@@ -38,21 +43,20 @@ fun PlannerScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Desayuno", style = MaterialTheme.typography.titleMedium)
-                Text(uiState.breakfast.ifEmpty { "No asignado" })
-                
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                
-                Text("Almuerzo", style = MaterialTheme.typography.titleMedium)
-                Text(uiState.lunch.ifEmpty { "No asignado" })
+        PlannerCard("Desayuno", uiState.breakfast)
+        Spacer(modifier = Modifier.height(8.dp))
+        PlannerCard("Almuerzo", uiState.lunch)
+        Spacer(modifier = Modifier.height(8.dp))
+        PlannerCard("Cena", uiState.dinner)
+    }
+}
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                
-                Text("Cena", style = MaterialTheme.typography.titleMedium)
-                Text(uiState.dinner.ifEmpty { "No asignado" })
-            }
+@Composable
+fun PlannerCard(type: String, recipeName: String) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(type, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            Text(recipeName.ifEmpty { "Sin asignar" }, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
