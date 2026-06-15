@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.tecsup.cookplan.data.repository.MealPlanRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -14,6 +15,7 @@ data class PlannerUiState(
     val dinner: String = ""
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PlannerViewModel(private val repository: MealPlanRepository) : ViewModel() {
     private val _selectedDay = MutableStateFlow("Lunes")
     

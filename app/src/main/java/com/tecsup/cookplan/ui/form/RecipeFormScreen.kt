@@ -38,8 +38,7 @@ fun RecipeFormScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { 
-                viewModel.saveRecipe()
-                onBack()
+                viewModel.saveRecipe(onSuccess = onBack)
             }) {
                 Icon(Icons.Default.Check, contentDescription = "Guardar")
             }

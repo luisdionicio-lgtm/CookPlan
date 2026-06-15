@@ -12,13 +12,13 @@ interface RecipeDao {
     suspend fun getRecipeById(id: Long): RecipeEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRecipe(recipe: RecipeEntity)
+    suspend fun insertRecipe(recipe: RecipeEntity): Long
 
     @Update
-    suspend fun updateRecipe(recipe: RecipeEntity)
+    suspend fun updateRecipe(recipe: RecipeEntity): Int
 
     @Delete
-    suspend fun deleteRecipe(recipe: RecipeEntity)
+    suspend fun deleteRecipe(recipe: RecipeEntity): Int
 
     @Query("SELECT * FROM recipes WHERE name LIKE '%' || :query || '%'")
     fun searchRecipes(query: String): Flow<List<RecipeEntity>>

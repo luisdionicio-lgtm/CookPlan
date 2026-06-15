@@ -9,8 +9,8 @@ interface MealPlanDao {
     fun getPlanByDay(day: String): Flow<List<MealPlanEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMealPlan(mealPlan: MealPlanEntity)
+    suspend fun insertMealPlan(mealPlan: MealPlanEntity): Long
 
     @Query("DELETE FROM meal_plans WHERE dayOfWeek = :day AND mealType = :type")
-    suspend fun removeMealFromPlan(day: String, type: String)
+    suspend fun removeMealFromPlan(day: String, type: String): Int
 }

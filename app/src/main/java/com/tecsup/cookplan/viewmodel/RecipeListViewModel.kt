@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.tecsup.cookplan.data.local.RecipeEntity
 import com.tecsup.cookplan.data.repository.RecipeRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -14,6 +15,7 @@ data class RecipeListUiState(
     val searchQuery: String = ""
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RecipeListViewModel(private val repository: RecipeRepository) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     
