@@ -38,6 +38,18 @@ android {
 }
 
 dependencies {
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.9.0")
+
+    // ViewModel Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
+
+    // Lifecycle Compose
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.1")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
