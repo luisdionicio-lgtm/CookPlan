@@ -1,14 +1,14 @@
 package com.tecsup.cookplan.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class AppRoutes(val route: String, val title: String = "", val icon: ImageVector? = null) {
 
-    object Recipes : AppRoutes("recipes", "Recetas", Icons.AutoMirrored.Filled.List)
+    object Recipes : AppRoutes("recipes", "Recetas", Icons.Default.Home)
 
     object Detail : AppRoutes("detail/{recipeId}") {
         fun createRoute(recipeId: Long): String {
@@ -23,7 +23,7 @@ sealed class AppRoutes(val route: String, val title: String = "", val icon: Imag
         }
     }
 
-    object Planner : AppRoutes("planner", "Plan", Icons.Default.DateRange)
+    object Planner : AppRoutes("planner", "Planificador", Icons.Default.CalendarMonth)
 
-    object Explore : AppRoutes("explore", "Explorar", Icons.Default.Search)
+    object Explore : AppRoutes("explore", "Explorar", Icons.Default.Explore)
 }
