@@ -44,6 +44,7 @@ class ExploreViewModel(private val repository: RecipeRepository) : ViewModel() {
         viewModelScope.launch {
             val entity = RecipeEntity(
                 name = mealDto.name,
+                category = mealDto.category,
                 ingredients = mealDto.toIngredientsString(),
                 instructions = mealDto.instructions ?: "",
                 isExternal = true,

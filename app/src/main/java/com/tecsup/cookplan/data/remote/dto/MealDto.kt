@@ -9,6 +9,7 @@ data class MealResponse(
 data class MealDto(
     @SerializedName("idMeal") val id: String,
     @SerializedName("strMeal") val name: String,
+    @SerializedName("strCategory") val category: String?,
     @SerializedName("strInstructions") val instructions: String?,
     @SerializedName("strMealThumb") val thumbUrl: String?,
     @SerializedName("strIngredient1") val ing1: String?,

@@ -58,6 +58,10 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging)
 
+    // Coil (carga de imágenes)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.3")
 
