@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.viewmodel.RecipeDetailViewModel
@@ -26,7 +28,8 @@ private val COMIDAS = listOf("Desayuno", "Almuerzo", "Cena")
 @Composable
 fun RecipeDetailScreen(
     recipeId: Long,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEdit: (Long) -> Unit
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as CookPlanApplication
@@ -40,7 +43,9 @@ fun RecipeDetailScreen(
     var assignMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(recipeId) {
+    // Recarga al entrar y al volver (p. ej. tras editar en el formulario),
+    // para no mostrar datos desactualizados.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         viewModel.loadRecipe(recipeId)
     }
 
@@ -62,7 +67,7 @@ fun RecipeDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Editar — se conecta en el Paso 3 */ }) {
+                    IconButton(onClick = { uiState.recipe?.let { onEdit(it.id) } }) {
                         Icon(Icons.Default.Edit, contentDescription = "Editar")
                     }
                     IconButton(onClick = {

@@ -22,22 +22,44 @@ class RecipeFormViewModel(private val repository: RecipeRepository) : ViewModel(
     private val _uiState = MutableStateFlow(RecipeFormUiState())
     val uiState: StateFlow<RecipeFormUiState> = _uiState.asStateFlow()
 
+    // Receta original al editar. Conserva campos que el formulario no muestra
+    // (imageUrl, isExternal) para no perderlos al actualizar.
+    private var loaded: RecipeEntity? = null
+
     fun onNameChange(newName: String) { _uiState.value = _uiState.value.copy(name = newName) }
     fun onIngredientsChange(newIng: String) { _uiState.value = _uiState.value.copy(ingredients = newIng) }
     fun onInstructionsChange(newIns: String) { _uiState.value = _uiState.value.copy(instructions = newIns) }
 
+    fun loadRecipe(id: Long) {
+        viewModelScope.launch {
+            val recipe = repository.getRecipeById(id) ?: return@launch
+            loaded = recipe
+            _uiState.value = _uiState.value.copy(
+                id = recipe.id,
+                name = recipe.name,
+                ingredients = recipe.ingredients,
+                instructions = recipe.instructions
+            )
+        }
+    }
+
     fun saveRecipe(onSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true)
-            val recipe = RecipeEntity(
-                id = _uiState.value.id,
-                name = _uiState.value.name,
-                ingredients = _uiState.value.ingredients,
-                instructions = _uiState.value.instructions
+            val current = _uiState.value
+            // Si estamos editando, partimos de la receta original (preserva imageUrl/isExternal).
+            val recipe = loaded?.copy(
+                name = current.name,
+                ingredients = current.ingredients,
+                instructions = current.instructions
+            ) ?: RecipeEntity(
+                name = current.name,
+                ingredients = current.ingredients,
+                instructions = current.instructions
             )
             if (recipe.id == 0L) repository.insertRecipe(recipe)
             else repository.updateRecipe(recipe)
-            
+
             _uiState.value = _uiState.value.copy(isSaving = false)
             onSuccess()
         }

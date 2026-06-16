@@ -64,7 +64,7 @@ fun AppNavigation() {
         ) {
             composable(AppRoutes.Recipes.route) {
                 RecipeListScreen(
-                    onAddClick = { navController.navigate(AppRoutes.Form.route) },
+                    onAddClick = { navController.navigate(AppRoutes.Form.createRoute()) },
                     onRecipeClick = { id -> navController.navigate(AppRoutes.Detail.createRoute(id)) }
                 )
             }
@@ -74,11 +74,25 @@ fun AppNavigation() {
                 arguments = listOf(navArgument("recipeId") { type = NavType.LongType })
             ) { backStackEntry ->
                 val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
-                RecipeDetailScreen(recipeId, onBack = { navController.popBackStack() })
+                RecipeDetailScreen(
+                    recipeId = recipeId,
+                    onBack = { navController.popBackStack() },
+                    onEdit = { id -> navController.navigate(AppRoutes.Form.createRoute(id)) }
+                )
             }
 
-            composable(AppRoutes.Form.route) {
-                RecipeFormScreen(onBack = { navController.popBackStack() })
+            composable(
+                route = AppRoutes.Form.route,
+                arguments = listOf(navArgument("recipeId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                })
+            ) { backStackEntry ->
+                val argId = backStackEntry.arguments?.getLong("recipeId") ?: -1L
+                RecipeFormScreen(
+                    recipeId = if (argId == -1L) null else argId,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             composable(AppRoutes.Planner.route) {

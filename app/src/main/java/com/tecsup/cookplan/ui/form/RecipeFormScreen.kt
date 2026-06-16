@@ -2,7 +2,7 @@ package com.tecsup.cookplan.ui.form
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +17,7 @@ import com.tecsup.cookplan.viewmodel.RecipeFormViewModelFactory
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeFormScreen(
+    recipeId: Long? = null,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -25,13 +26,18 @@ fun RecipeFormScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    // Si viene con id, cargamos la receta para editarla (RF-04).
+    LaunchedEffect(recipeId) {
+        if (recipeId != null) viewModel.loadRecipe(recipeId)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nueva Receta") },
+                title = { Text(if (recipeId == null) "Nueva Receta" else "Editar Receta") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Cancelar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cancelar")
                     }
                 }
             )
