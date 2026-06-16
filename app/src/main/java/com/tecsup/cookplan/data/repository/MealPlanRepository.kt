@@ -5,6 +5,8 @@ import com.tecsup.cookplan.data.local.MealPlanEntity
 import kotlinx.coroutines.flow.Flow
 
 class MealPlanRepository(private val mealPlanDao: MealPlanDao) {
+    fun getAllPlans(): Flow<List<MealPlanEntity>> = mealPlanDao.getAllPlans()
+
     fun getPlanByDay(day: String): Flow<List<MealPlanEntity>> = mealPlanDao.getPlanByDay(day)
 
     // Asigna una receta a una casilla (día + tipo de comida). Si ya había una receta

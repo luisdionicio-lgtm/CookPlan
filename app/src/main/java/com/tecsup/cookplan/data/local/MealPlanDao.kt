@@ -5,6 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MealPlanDao {
+    @Query("SELECT * FROM meal_plans")
+    fun getAllPlans(): Flow<List<MealPlanEntity>>
+
     @Query("SELECT * FROM meal_plans WHERE dayOfWeek = :day")
     fun getPlanByDay(day: String): Flow<List<MealPlanEntity>>
 
