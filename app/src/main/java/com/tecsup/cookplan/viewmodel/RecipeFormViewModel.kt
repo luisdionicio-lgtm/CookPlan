@@ -13,8 +13,14 @@ import kotlinx.coroutines.launch
 data class RecipeFormUiState(
     val id: Long = 0,
     val name: String = "",
+    val category: String = "",
     val ingredients: String = "",
     val instructions: String = "",
+    val timeMinutes: String = "",
+    val servings: String = "",
+    val nameError: Boolean = false,
+    val ingredientsError: Boolean = false,
+    val instructionsError: Boolean = false,
     val isSaving: Boolean = false
 )
 
@@ -23,12 +29,17 @@ class RecipeFormViewModel(private val repository: RecipeRepository) : ViewModel(
     val uiState: StateFlow<RecipeFormUiState> = _uiState.asStateFlow()
 
     // Receta original al editar. Conserva campos que el formulario no muestra
-    // (imageUrl, isExternal) para no perderlos al actualizar.
+    // (isExternal, imageUrl) para no perderlos al actualizar.
     private var loaded: RecipeEntity? = null
 
-    fun onNameChange(newName: String) { _uiState.value = _uiState.value.copy(name = newName) }
-    fun onIngredientsChange(newIng: String) { _uiState.value = _uiState.value.copy(ingredients = newIng) }
-    fun onInstructionsChange(newIns: String) { _uiState.value = _uiState.value.copy(instructions = newIns) }
+    fun onNameChange(v: String) { _uiState.value = _uiState.value.copy(name = v, nameError = false) }
+    fun onCategoryChange(v: String) { _uiState.value = _uiState.value.copy(category = v) }
+    fun onIngredientsChange(v: String) { _uiState.value = _uiState.value.copy(ingredients = v, ingredientsError = false) }
+    fun onInstructionsChange(v: String) { _uiState.value = _uiState.value.copy(instructions = v, instructionsError = false) }
+
+    // Solo dígitos (o vacío) en los campos numéricos.
+    fun onTimeChange(v: String) { if (v.all { it.isDigit() }) _uiState.value = _uiState.value.copy(timeMinutes = v) }
+    fun onServingsChange(v: String) { if (v.all { it.isDigit() }) _uiState.value = _uiState.value.copy(servings = v) }
 
     fun loadRecipe(id: Long) {
         viewModelScope.launch {
@@ -37,25 +48,46 @@ class RecipeFormViewModel(private val repository: RecipeRepository) : ViewModel(
             _uiState.value = _uiState.value.copy(
                 id = recipe.id,
                 name = recipe.name,
+                category = recipe.category ?: "",
                 ingredients = recipe.ingredients,
-                instructions = recipe.instructions
+                instructions = recipe.instructions,
+                timeMinutes = recipe.timeMinutes?.toString() ?: "",
+                servings = recipe.servings?.toString() ?: ""
             )
         }
     }
 
     fun saveRecipe(onSuccess: () -> Unit) {
+        val current = _uiState.value
+        // Validación de campos obligatorios (RF-01).
+        val nameError = current.name.isBlank()
+        val ingredientsError = current.ingredients.isBlank()
+        val instructionsError = current.instructions.isBlank()
+        if (nameError || ingredientsError || instructionsError) {
+            _uiState.value = current.copy(
+                nameError = nameError,
+                ingredientsError = ingredientsError,
+                instructionsError = instructionsError
+            )
+            return
+        }
+
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isSaving = true)
-            val current = _uiState.value
-            // Si estamos editando, partimos de la receta original (preserva imageUrl/isExternal).
+            _uiState.value = current.copy(isSaving = true)
             val recipe = loaded?.copy(
                 name = current.name,
+                category = current.category.ifBlank { null },
                 ingredients = current.ingredients,
-                instructions = current.instructions
+                instructions = current.instructions,
+                timeMinutes = current.timeMinutes.toIntOrNull(),
+                servings = current.servings.toIntOrNull()
             ) ?: RecipeEntity(
                 name = current.name,
+                category = current.category.ifBlank { null },
                 ingredients = current.ingredients,
-                instructions = current.instructions
+                instructions = current.instructions,
+                timeMinutes = current.timeMinutes.toIntOrNull(),
+                servings = current.servings.toIntOrNull()
             )
             if (recipe.id == 0L) repository.insertRecipe(recipe)
             else repository.updateRecipe(recipe)

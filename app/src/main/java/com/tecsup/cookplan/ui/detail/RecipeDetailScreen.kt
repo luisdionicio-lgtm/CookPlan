@@ -107,6 +107,20 @@ fun RecipeDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    recipe.category?.takeIf { it.isNotBlank() }?.let {
+                        AssistChip(onClick = {}, label = { Text(it) })
+                    }
+                    recipe.timeMinutes?.let {
+                        AssistChip(onClick = {}, label = { Text("$it min") })
+                    }
+                    recipe.servings?.let {
+                        AssistChip(onClick = {}, label = { Text("$it porciones") })
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(text = "Ingredientes", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
                 Text(text = recipe.ingredients, style = MaterialTheme.typography.bodyLarge)
 
