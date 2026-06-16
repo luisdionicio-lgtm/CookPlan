@@ -38,6 +38,12 @@ class PlannerViewModel(private val repository: MealPlanRepository) : ViewModel()
     fun selectDay(day: String) {
         _selectedDay.value = day
     }
+
+    fun removeMeal(mealType: String) {
+        viewModelScope.launch {
+            repository.removeMealFromPlan(_selectedDay.value, mealType)
+        }
+    }
 }
 
 class PlannerViewModelFactory(private val repository: MealPlanRepository) : ViewModelProvider.Factory {

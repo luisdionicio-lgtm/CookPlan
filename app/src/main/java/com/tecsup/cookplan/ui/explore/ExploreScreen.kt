@@ -91,7 +91,13 @@ fun ExploreScreen() {
                     }
                 }
                 is ExploreUiState.Error -> {
-                    Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            state.message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
                 else -> {
                     Text("Ingresa una palabra clave para buscar recetas.")

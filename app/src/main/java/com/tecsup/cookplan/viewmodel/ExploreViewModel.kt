@@ -30,12 +30,12 @@ class ExploreViewModel(private val repository: RecipeRepository) : ViewModel() {
             try {
                 val results = repository.searchOnline(query)
                 if (results.isEmpty()) {
-                    _uiState.value = ExploreUiState.Error("No se encontraron recetas")
+                    _uiState.value = ExploreUiState.Error("No se encontraron recetas. Prueba con otra palabra.")
                 } else {
                     _uiState.value = ExploreUiState.Success(results)
                 }
             } catch (e: Exception) {
-                _uiState.value = ExploreUiState.Error("Error de conexión: ${e.message}")
+                _uiState.value = ExploreUiState.Error("Sin conexión. Verifica tu internet e intenta de nuevo.")
             }
         }
     }

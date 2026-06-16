@@ -3,7 +3,9 @@ package com.tecsup.cookplan.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.tecsup.cookplan.data.local.MealPlanEntity
 import com.tecsup.cookplan.data.local.RecipeEntity
+import com.tecsup.cookplan.data.repository.MealPlanRepository
 import com.tecsup.cookplan.data.repository.RecipeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +18,10 @@ data class RecipeDetailUiState(
     val error: String? = null
 )
 
-class RecipeDetailViewModel(private val repository: RecipeRepository) : ViewModel() {
+class RecipeDetailViewModel(
+    private val repository: RecipeRepository,
+    private val mealPlanRepository: MealPlanRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(RecipeDetailUiState())
     val uiState: StateFlow<RecipeDetailUiState> = _uiState.asStateFlow()
 
@@ -39,13 +44,32 @@ class RecipeDetailViewModel(private val repository: RecipeRepository) : ViewMode
             onComplete()
         }
     }
+
+    // Asigna la receta actual a un día y tipo de comida del planificador (RF-07).
+    fun assignToPlan(day: String, mealType: String, onDone: () -> Unit) {
+        val recipe = _uiState.value.recipe ?: return
+        viewModelScope.launch {
+            mealPlanRepository.assignMeal(
+                MealPlanEntity(
+                    dayOfWeek = day,
+                    mealType = mealType,
+                    recipeId = recipe.id,
+                    recipeName = recipe.name
+                )
+            )
+            onDone()
+        }
+    }
 }
 
-class RecipeDetailViewModelFactory(private val repository: RecipeRepository) : ViewModelProvider.Factory {
+class RecipeDetailViewModelFactory(
+    private val repository: RecipeRepository,
+    private val mealPlanRepository: MealPlanRepository
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RecipeDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return RecipeDetailViewModel(repository) as T
+            return RecipeDetailViewModel(repository, mealPlanRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

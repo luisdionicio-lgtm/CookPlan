@@ -22,13 +22,11 @@ class RecipeRepository(
 
     fun searchRecipes(query: String): Flow<List<RecipeEntity>> = recipeDao.searchRecipes(query)
 
-    // Remoto
+    // Remoto. NO atrapamos la excepción aquí: la dejamos propagar para que el
+    // ViewModel pueda distinguir "sin conexión" de "sin resultados" (RF-09 / CP-06).
+    // TheMealDB devuelve {"meals": null} cuando no hay coincidencias, no un error.
     suspend fun searchOnline(query: String): List<MealDto> {
-        return try {
-            val response = apiService.searchRecipes(query)
-            response.meals ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val response = apiService.searchRecipes(query)
+        return response.meals ?: emptyList()
     }
 }
