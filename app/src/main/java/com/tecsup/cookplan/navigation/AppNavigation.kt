@@ -1,5 +1,6 @@
 package com.tecsup.cookplan.navigation
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,10 +33,13 @@ fun AppNavigation() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
             
-            // Solo mostrar BottomBar en las rutas principales
             val showBottomBar = items.any { it.route == currentDestination?.route }
 
-            if (showBottomBar) {
+            AnimatedVisibility(
+                visible = showBottomBar,
+                enter = slideInVertically { it },
+                exit = slideOutVertically { it }
+            ) {
                 NavigationBar {
                     items.forEach { screen ->
                         NavigationBarItem(
@@ -62,7 +66,11 @@ fun AppNavigation() {
             startDestination = AppRoutes.Recipes.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(AppRoutes.Recipes.route) {
+            composable(
+                route = AppRoutes.Recipes.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
                 RecipeListScreen(
                     onAddClick = { navController.navigate(AppRoutes.Form.createRoute()) },
                     onRecipeClick = { id -> navController.navigate(AppRoutes.Detail.createRoute(id)) }
@@ -71,7 +79,9 @@ fun AppNavigation() {
 
             composable(
                 route = AppRoutes.Detail.route,
-                arguments = listOf(navArgument("recipeId") { type = NavType.LongType })
+                arguments = listOf(navArgument("recipeId") { type = NavType.LongType }),
+                enterTransition = { slideInHorizontally { it } },
+                popExitTransition = { slideOutHorizontally { it } }
             ) { backStackEntry ->
                 val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
                 RecipeDetailScreen(
@@ -86,7 +96,9 @@ fun AppNavigation() {
                 arguments = listOf(navArgument("recipeId") {
                     type = NavType.LongType
                     defaultValue = -1L
-                })
+                }),
+                enterTransition = { slideInVertically { it } },
+                popExitTransition = { slideOutVertically { it } }
             ) { backStackEntry ->
                 val argId = backStackEntry.arguments?.getLong("recipeId") ?: -1L
                 RecipeFormScreen(
@@ -95,11 +107,19 @@ fun AppNavigation() {
                 )
             }
 
-            composable(AppRoutes.Planner.route) {
+            composable(
+                route = AppRoutes.Planner.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
                 PlannerScreen()
             }
 
-            composable(AppRoutes.Explore.route) {
+            composable(
+                route = AppRoutes.Explore.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
                 ExploreScreen()
             }
         }
