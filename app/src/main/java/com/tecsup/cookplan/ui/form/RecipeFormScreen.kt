@@ -135,8 +135,8 @@ fun RecipeFormScreen(
                 OutlinedTextField(
                     value = uiState.imageUrl,
                     onValueChange = { viewModel.onImageUrlChange(it) },
-                    label = { Text("URL de imagen") },
-                    placeholder = { Text("https://...") },
+                    label = { Text("Imagen") },
+                    placeholder = { Text("docs/imagen.jpg") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )

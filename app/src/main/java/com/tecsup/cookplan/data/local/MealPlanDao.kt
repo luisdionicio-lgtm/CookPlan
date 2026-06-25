@@ -8,6 +8,9 @@ interface MealPlanDao {
     @Query("SELECT * FROM meal_plans")
     fun getAllPlans(): Flow<List<MealPlanEntity>>
 
+    @Query("SELECT * FROM meal_plans")
+    suspend fun getAllPlansSnapshot(): List<MealPlanEntity>
+
     @Query("SELECT * FROM meal_plans WHERE dayOfWeek = :day")
     fun getPlanByDay(day: String): Flow<List<MealPlanEntity>>
 
@@ -16,4 +19,7 @@ interface MealPlanDao {
 
     @Query("DELETE FROM meal_plans WHERE dayOfWeek = :day AND mealType = :type")
     suspend fun removeMealFromPlan(day: String, type: String): Int
+
+    @Query("DELETE FROM meal_plans")
+    suspend fun clearPlans(): Int
 }

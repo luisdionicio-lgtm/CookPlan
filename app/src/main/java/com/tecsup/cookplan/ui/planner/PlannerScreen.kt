@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.cookplan.CookPlanApplication
+import com.tecsup.cookplan.notifications.CookPlanNotificationHelper
 import com.tecsup.cookplan.viewmodel.PlannerViewModel
 import com.tecsup.cookplan.viewmodel.PlannerViewModelFactory
 import java.time.LocalDate
@@ -109,6 +110,12 @@ fun PlannerScreen() {
                                     .fillMaxWidth()
                                     .clickable {
                                         viewModel.assign(dia, comida, recipe)
+                                        CookPlanNotificationHelper.scheduleMealReminder(
+                                            context = context,
+                                            recipeId = recipe.id,
+                                            recipeName = recipe.name,
+                                            mealType = comida
+                                        )
                                         dialogTarget = null
                                     }
                                     .padding(vertical = 12.dp),

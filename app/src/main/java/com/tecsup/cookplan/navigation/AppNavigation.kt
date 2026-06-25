@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -13,20 +14,41 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.tecsup.cookplan.CookPlanApplication
+import com.tecsup.cookplan.ui.auth.LoginScreen
+import com.tecsup.cookplan.ui.auth.RegisterScreen
 import com.tecsup.cookplan.ui.detail.RecipeDetailScreen
 import com.tecsup.cookplan.ui.explore.ExploreScreen
 import com.tecsup.cookplan.ui.form.RecipeFormScreen
 import com.tecsup.cookplan.ui.planner.PlannerScreen
+import com.tecsup.cookplan.ui.profile.ProfileScreen
 import com.tecsup.cookplan.ui.recipes.RecipeListScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    notificationRecipeId: Long? = null,
+    onNotificationHandled: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val app = context.applicationContext as CookPlanApplication
     val navController = rememberNavController()
     val items = listOf(
         AppRoutes.Recipes,
         AppRoutes.Planner,
-        AppRoutes.Explore
+        AppRoutes.Explore,
+        AppRoutes.Profile
     )
+    val startDestination = if (app.authRepository.isLoggedIn()) {
+        AppRoutes.Recipes.route
+    } else {
+        AppRoutes.Login.route
+    }
+
+    LaunchedEffect(startDestination) {
+        if (app.authRepository.isLoggedIn()) {
+            runCatching { app.syncRepository.syncUserData() }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -63,9 +85,41 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = AppRoutes.Recipes.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(
+                route = AppRoutes.Login.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
+                LoginScreen(
+                    onLoggedIn = {
+                        navController.navigate(AppRoutes.Recipes.route) {
+                            popUpTo(AppRoutes.Login.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onGoToRegister = { navController.navigate(AppRoutes.Register.route) }
+                )
+            }
+
+            composable(
+                route = AppRoutes.Register.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
+                RegisterScreen(
+                    onRegistered = {
+                        navController.navigate(AppRoutes.Recipes.route) {
+                            popUpTo(AppRoutes.Login.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onGoToLogin = { navController.popBackStack() }
+                )
+            }
+
             composable(
                 route = AppRoutes.Recipes.route,
                 enterTransition = { fadeIn() },
@@ -122,6 +176,33 @@ fun AppNavigation() {
             ) {
                 ExploreScreen()
             }
+
+            composable(
+                route = AppRoutes.Profile.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
+                ProfileScreen(
+                    onLoggedOut = {
+                        navController.navigate(AppRoutes.Login.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
         }
+    }
+
+    LaunchedEffect(notificationRecipeId) {
+        val recipeId = notificationRecipeId ?: return@LaunchedEffect
+        if (app.authRepository.isLoggedIn()) {
+            navController.navigate(AppRoutes.Detail.createRoute(recipeId)) {
+                launchSingleTop = true
+            }
+        }
+        onNotificationHandled()
     }
 }

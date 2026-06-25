@@ -27,8 +27,10 @@ fun RegisterScreen(
     onGoToLogin: () -> Unit
 ) {
     val context = LocalContext.current
-    val repo = (context.applicationContext as CookPlanApplication).authRepository
-    val viewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(repo))
+    val app = context.applicationContext as CookPlanApplication
+    val viewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(app.authRepository, app.syncRepository)
+    )
     val uiState by viewModel.uiState.collectAsState()
 
     var email by remember { mutableStateOf("") }

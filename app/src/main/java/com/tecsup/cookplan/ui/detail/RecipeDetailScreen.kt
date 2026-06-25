@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.tecsup.cookplan.CookPlanApplication
+import com.tecsup.cookplan.notifications.CookPlanNotificationHelper
 import com.tecsup.cookplan.viewmodel.RecipeDetailViewModel
 import com.tecsup.cookplan.viewmodel.RecipeDetailViewModelFactory
 
@@ -262,6 +263,14 @@ fun RecipeDetailScreen(
                 TextButton(onClick = {
                     viewModel.assignToPlan(selectedDay, selectedMeal) {
                         assignMessage = "Asignado: $selectedMeal del $selectedDay"
+                        uiState.recipe?.let { recipe ->
+                            CookPlanNotificationHelper.scheduleMealReminder(
+                                context = context,
+                                recipeId = recipe.id,
+                                recipeName = recipe.name,
+                                mealType = selectedMeal
+                            )
+                        }
                     }
                     showAssignDialog = false
                 }) {

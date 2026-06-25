@@ -66,6 +66,9 @@ dependencies {
     // Firebase (Authentication)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.coroutines)
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.3")

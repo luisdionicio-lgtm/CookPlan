@@ -2,35 +2,47 @@ package com.tecsup.cookplan.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.tecsup.cookplan.data.firebase.AuthRepository
+import com.tecsup.cookplan.data.repository.CookPlanSyncRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class AuthUiState(
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isLoggedIn: Boolean = false
 )
 
-class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(AuthUiState())
+class AuthViewModel(
+    private val repository: AuthRepository,
+    private val syncRepository: CookPlanSyncRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(AuthUiState(isLoggedIn = repository.isLoggedIn()))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun login(email: String, password: String, onSuccess: () -> Unit) {
         val correo = email.trim()
         if (correo.isBlank() || password.isBlank()) {
-            _uiState.value = AuthUiState(error = "Completa correo y contraseña.")
+            _uiState.value = _uiState.value.copy(error = "Completa correo y contraseña.")
             return
         }
-        _uiState.value = AuthUiState(isLoading = true)
+        _uiState.value = AuthUiState(isLoading = true, isLoggedIn = repository.isLoggedIn())
         repository.login(correo, password) { result ->
             result.fold(
-                onSuccess = { _uiState.value = AuthUiState(); onSuccess() },
-                onFailure = { _uiState.value = AuthUiState(error = mapError(it)) }
+                onSuccess = { syncAfterAuth(onSuccess) },
+                onFailure = {
+                    _uiState.value = AuthUiState(
+                        error = mapError(it),
+                        isLoggedIn = repository.isLoggedIn()
+                    )
+                }
             )
         }
     }
@@ -38,32 +50,48 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     fun register(email: String, password: String, confirm: String, onSuccess: () -> Unit) {
         val correo = email.trim()
         if (correo.isBlank() || password.isBlank()) {
-            _uiState.value = AuthUiState(error = "Completa todos los campos.")
+            _uiState.value = _uiState.value.copy(error = "Completa todos los campos.")
             return
         }
         if (password.length < 6) {
-            _uiState.value = AuthUiState(error = "La contraseña debe tener al menos 6 caracteres.")
+            _uiState.value = _uiState.value.copy(error = "La contraseña debe tener al menos 6 caracteres.")
             return
         }
         if (password != confirm) {
-            _uiState.value = AuthUiState(error = "Las contraseñas no coinciden.")
+            _uiState.value = _uiState.value.copy(error = "Las contraseñas no coinciden.")
             return
         }
-        _uiState.value = AuthUiState(isLoading = true)
+        _uiState.value = AuthUiState(isLoading = true, isLoggedIn = repository.isLoggedIn())
         repository.register(correo, password) { result ->
             result.fold(
-                onSuccess = { _uiState.value = AuthUiState(); onSuccess() },
-                onFailure = { _uiState.value = AuthUiState(error = mapError(it)) }
+                onSuccess = { syncAfterAuth(onSuccess) },
+                onFailure = {
+                    _uiState.value = AuthUiState(
+                        error = mapError(it),
+                        isLoggedIn = repository.isLoggedIn()
+                    )
+                }
             )
         }
     }
 
     val userEmail: String? get() = repository.currentUser?.email
 
-    fun logout() = repository.logout()
+    fun logout() {
+        repository.logout()
+        _uiState.value = AuthUiState(isLoggedIn = false)
+    }
 
     fun clearError() {
         if (_uiState.value.error != null) _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    private fun syncAfterAuth(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { syncRepository.syncUserData() }
+            _uiState.value = AuthUiState(isLoggedIn = true)
+            onSuccess()
+        }
     }
 
     private fun mapError(e: Throwable): String = when (e) {
@@ -75,11 +103,14 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     }
 }
 
-class AuthViewModelFactory(private val repository: AuthRepository) : ViewModelProvider.Factory {
+class AuthViewModelFactory(
+    private val repository: AuthRepository,
+    private val syncRepository: CookPlanSyncRepository
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return AuthViewModel(repository) as T
+            return AuthViewModel(repository, syncRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

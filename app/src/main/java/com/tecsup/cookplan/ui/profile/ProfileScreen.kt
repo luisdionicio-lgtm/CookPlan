@@ -28,8 +28,10 @@ import com.tecsup.cookplan.viewmodel.AuthViewModelFactory
 @Composable
 fun ProfileScreen(onLoggedOut: () -> Unit) {
     val context = LocalContext.current
-    val repo = (context.applicationContext as CookPlanApplication).authRepository
-    val viewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(repo))
+    val app = context.applicationContext as CookPlanApplication
+    val viewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(app.authRepository, app.syncRepository)
+    )
 
     // Estado local (placeholder): la sincronización real (Firestore) y las notificaciones
     // son de la otra parte de la Parte 2; aquí solo se ven los controles.
