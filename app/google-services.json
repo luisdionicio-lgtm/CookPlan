@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71717295287",
+    "project_id": "cookplan-1c1b4",
+    "storage_bucket": "cookplan-1c1b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71717295287:android:a113c94f08809148e1e932",
+        "android_client_info": {
+          "package_name": "com.tecsup.cookplan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpo0NNc1pXVmdFhahev9aZi4r8t7ww4is"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
