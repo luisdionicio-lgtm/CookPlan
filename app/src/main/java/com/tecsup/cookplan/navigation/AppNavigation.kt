@@ -20,6 +20,7 @@ import com.tecsup.cookplan.ui.detail.RecipeDetailScreen
 import com.tecsup.cookplan.ui.explore.ExploreScreen
 import com.tecsup.cookplan.ui.form.RecipeFormScreen
 import com.tecsup.cookplan.ui.planner.PlannerScreen
+import com.tecsup.cookplan.ui.profile.ProfileScreen
 import com.tecsup.cookplan.ui.recipes.RecipeListScreen
 
 @Composable
@@ -36,7 +37,8 @@ fun AppNavigation() {
     val items = listOf(
         AppRoutes.Recipes,
         AppRoutes.Planner,
-        AppRoutes.Explore
+        AppRoutes.Explore,
+        AppRoutes.Profile
     )
 
     Scaffold(
@@ -135,6 +137,16 @@ fun AppNavigation() {
 
             composable(AppRoutes.Explore.route) {
                 ExploreScreen()
+            }
+
+            composable(AppRoutes.Profile.route) {
+                ProfileScreen(
+                    onLoggedOut = {
+                        navController.navigate(AppRoutes.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }
