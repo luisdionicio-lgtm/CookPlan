@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class AppRoutes(val route: String, val title: String = "", val icon: ImageVector? = null) {
@@ -26,4 +27,10 @@ sealed class AppRoutes(val route: String, val title: String = "", val icon: Imag
     object Planner : AppRoutes("planner", "Planificador", Icons.Default.CalendarMonth)
 
     object Explore : AppRoutes("explore", "Explorar", Icons.Default.Explore)
+
+    object Login : AppRoutes("login")
+
+    object Register : AppRoutes("register")
+
+    object Profile : AppRoutes("profile", "Perfil", Icons.Default.Person)
 }

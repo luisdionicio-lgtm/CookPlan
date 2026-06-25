@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -61,6 +62,10 @@ dependencies {
     // Coil (carga de imágenes)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+
+    // Firebase (Authentication)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.3")
