@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 sealed class ExploreUiState {
     object Idle : ExploreUiState()
@@ -24,7 +26,7 @@ class ExploreViewModel(private val repository: RecipeRepository) : ViewModel() {
 
     fun searchOnline(query: String) {
         if (query.isBlank()) return
-        
+
         viewModelScope.launch {
             _uiState.value = ExploreUiState.Loading
             try {
@@ -34,8 +36,12 @@ class ExploreViewModel(private val repository: RecipeRepository) : ViewModel() {
                 } else {
                     _uiState.value = ExploreUiState.Success(results)
                 }
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 _uiState.value = ExploreUiState.Error("Sin conexión. Verifica tu internet e intenta de nuevo.")
+            } catch (e: HttpException) {
+                _uiState.value = ExploreUiState.Error("TheMealDB no respondió correctamente. Intenta de nuevo en unos minutos.")
+            } catch (e: Exception) {
+                _uiState.value = ExploreUiState.Error("No se pudo buscar en TheMealDB. Intenta con otra palabra en inglés.")
             }
         }
     }

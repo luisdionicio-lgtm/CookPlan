@@ -3,6 +3,7 @@ package com.tecsup.cookplan.data.repository
 import com.tecsup.cookplan.data.local.RecipeDao
 import com.tecsup.cookplan.data.local.RecipeEntity
 import com.tecsup.cookplan.data.remote.MealApiService
+import com.tecsup.cookplan.data.remote.MealSearchQueryTranslator
 import com.tecsup.cookplan.data.remote.dto.MealDto
 import kotlinx.coroutines.flow.Flow
 
@@ -26,7 +27,7 @@ class RecipeRepository(
     // ViewModel pueda distinguir "sin conexión" de "sin resultados" (RF-09 / CP-06).
     // TheMealDB devuelve {"meals": null} cuando no hay coincidencias, no un error.
     suspend fun searchOnline(query: String): List<MealDto> {
-        val response = apiService.searchRecipes(query)
+        val response = apiService.searchRecipes(MealSearchQueryTranslator.translate(query))
         return response.meals ?: emptyList()
     }
 }

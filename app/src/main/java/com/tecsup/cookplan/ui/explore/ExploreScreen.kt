@@ -70,7 +70,7 @@ fun ExploreScreen() {
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar en TheMealDB (ej. pollo)") },
+                placeholder = { Text("Buscar en TheMealDB (ej. pollo, chicken)") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
                 shape = RoundedCornerShape(28.dp),
