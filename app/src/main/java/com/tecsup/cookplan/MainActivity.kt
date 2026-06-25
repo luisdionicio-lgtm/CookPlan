@@ -47,8 +47,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun Intent?.recipeIdExtra(): Long? {
-        val value = this?.getLongExtra(CookPlanNotificationHelper.EXTRA_RECIPE_ID, -1L) ?: -1L
-        return value.takeIf { it > 0L }
+        if (this == null) return null
+
+        // 1) Notificación generada por la app (recordatorio local o push en primer plano):
+        //    el recipeId viaja como Long con nuestra clave interna.
+        val fromApp = getLongExtra(CookPlanNotificationHelper.EXTRA_RECIPE_ID, -1L)
+        if (fromApp > 0L) return fromApp
+
+        // 2) Push manejada por el sistema (app en segundo plano o cerrada): Firebase entrega
+        //    los datos del payload como texto, con la clave "recipeId" que se configura en la consola.
+        val fromData = getStringExtra("recipeId")?.toLongOrNull()
+        if (fromData != null && fromData > 0L) return fromData
+
+        return null
     }
 }
 
