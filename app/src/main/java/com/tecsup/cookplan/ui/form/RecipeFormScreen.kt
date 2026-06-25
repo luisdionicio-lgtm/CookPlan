@@ -75,7 +75,8 @@ private val CATEGORIAS = listOf("Desayuno", "Almuerzo", "Cena", "Postre", "Entra
 @Composable
 fun RecipeFormScreen(
     recipeId: Long? = null,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onSaved: () -> Unit = onBack
 ) {
     val context = LocalContext.current
     val repository = (context.applicationContext as CookPlanApplication).recipeRepository
@@ -218,12 +219,21 @@ fun RecipeFormScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { viewModel.saveRecipe(onSuccess = onBack) },
+                onClick = { viewModel.saveRecipe(onSuccess = onSaved) },
+                enabled = !uiState.isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text("Guardar receta")
+                if (uiState.isSaving) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Guardar receta")
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -255,6 +265,11 @@ private fun RecipeImagePicker(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Elige una imagen", style = MaterialTheme.typography.titleMedium)
         }
+        Text(
+            "Al seleccionar una imagen se completan los datos principales de la receta.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(modifier = Modifier.height(10.dp))
 
         AnimatedVisibility(visible = selected != null) {

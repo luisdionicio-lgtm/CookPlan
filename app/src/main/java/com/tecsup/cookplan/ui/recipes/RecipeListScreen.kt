@@ -2,7 +2,19 @@ package com.tecsup.cookplan.ui.recipes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -10,11 +22,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,15 +48,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.data.local.RecipeEntity
+import com.tecsup.cookplan.ui.components.CookPlanHero
 import com.tecsup.cookplan.ui.components.RecipeImage
 import com.tecsup.cookplan.viewmodel.RecipeListViewModel
 import com.tecsup.cookplan.viewmodel.RecipeListViewModelFactory
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeListScreen(
     onAddClick: () -> Unit,
@@ -41,46 +64,18 @@ fun RecipeListScreen(
     val context = LocalContext.current
     val repository = (context.applicationContext as CookPlanApplication).recipeRepository
     val viewModel: RecipeListViewModel = viewModel(factory = RecipeListViewModelFactory(repository))
-
     val uiState by viewModel.uiState.collectAsState()
-
-    var menuExpanded by remember { mutableStateOf(false) }
-    var showAbout by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text("¡Hola!", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                        Text("CookPlan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                ),
-                actions = {
-                    IconButton(onClick = { menuExpanded = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
-                    }
-                    DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                        DropdownMenuItem(
-                            text = { Text("Acerca de CookPlan") },
-                            onClick = { menuExpanded = false; showAbout = true }
-                        )
-                    }
-                }
-            )
-        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onAddClick,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(18.dp),
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Nueva Receta") }
+                text = { Text("Nueva receta") }
             )
         }
     ) { padding ->
@@ -90,14 +85,22 @@ fun RecipeListScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            CookPlanHero(
+                title = "CookPlan",
+                subtitle = "Recetas listas para planificar tu semana",
+                badge = "${uiState.recipes.size} recetas"
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = { viewModel.onSearchQueryChange(it) }
             )
 
-            // Filtro por categoría (RF-06).
             if (uiState.categories.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(end = 16.dp)
@@ -115,35 +118,26 @@ fun RecipeListScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (uiState.recipes.isEmpty() && !uiState.isLoading) {
                 EmptyState()
             } else {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 88.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    contentPadding = PaddingValues(bottom = 104.dp)
                 ) {
                     items(uiState.recipes) { recipe ->
-                        AdvancedRecipeCard(recipe) { onRecipeClick(recipe.id) }
+                        RecipeCard(recipe) { onRecipeClick(recipe.id) }
                     }
                 }
             }
         }
     }
-
-    if (showAbout) {
-        AlertDialog(
-            onDismissRequest = { showAbout = false },
-            title = { Text("CookPlan v1.0") },
-            text = { Text("Tu asistente personal de cocina. Organiza tus recetas y planifica tu semana de forma saludable.") },
-            confirmButton = { TextButton(onClick = { showAbout = false }) { Text("Entendido") } }
-        )
-    }
 }
 
 @Composable
-fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
     TextField(
         value = query,
         onValueChange = onQueryChange,
@@ -151,7 +145,7 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
         placeholder = { Text("¿Qué quieres cocinar hoy?") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
         singleLine = true,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -162,50 +156,47 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,
         label = { Text(label) },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = MaterialTheme.colorScheme.primary,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
         )
     )
 }
 
 @Composable
-private fun AdvancedRecipeCard(recipe: RecipeEntity, onClick: () -> Unit) {
+private fun RecipeCard(recipe: RecipeEntity, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(136.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            Box(
+            RecipeImage(
+                imageRef = recipe.imageUrl,
+                contentDescription = recipe.name,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .width(120.dp)
+                    .width(132.dp)
                     .fillMaxHeight()
-            ) {
-                RecipeImage(
-                    imageRef = recipe.imageUrl,
-                    contentDescription = recipe.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            )
 
             Column(
                 modifier = Modifier
-                    .padding(12.dp)
-                    .fillMaxHeight(),
+                    .padding(14.dp)
+                    .fillMaxHeight()
+                    .weight(1f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
@@ -213,14 +204,14 @@ private fun AdvancedRecipeCard(recipe: RecipeEntity, onClick: () -> Unit) {
                         recipe.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     val meta = listOfNotNull(
-                        recipe.timeMinutes?.let { "⏱ $it'" },
-                        recipe.servings?.let { "🍽 $it" }
-                    ).joinToString("  ")
+                        recipe.timeMinutes?.let { "$it min" },
+                        recipe.servings?.let { "$it porciones" }
+                    ).joinToString(" · ")
                     if (meta.isNotEmpty()) {
                         Text(meta, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -228,14 +219,14 @@ private fun AdvancedRecipeCard(recipe: RecipeEntity, onClick: () -> Unit) {
 
                 recipe.category?.takeIf { it.isNotBlank() }?.let { cat ->
                     Surface(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(8.dp)
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(999.dp)
                     ) {
                         Text(
                             cat,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -246,18 +237,20 @@ private fun AdvancedRecipeCard(recipe: RecipeEntity, onClick: () -> Unit) {
 }
 
 @Composable
-fun EmptyState() {
+private fun EmptyState() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                Icons.Default.Restaurant,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.outlineVariant
-            )
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
+                Icon(
+                    Icons.Default.Restaurant,
+                    contentDescription = null,
+                    modifier = Modifier.padding(18.dp).size(46.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("No hay recetas todavía", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
-            Text("Tu cocina está esperando...", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            Text("Tu cocina está lista", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Agrega una receta y empieza a planificar.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

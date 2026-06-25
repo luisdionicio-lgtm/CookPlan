@@ -63,6 +63,7 @@ import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.data.local.MealPlanEntity
 import com.tecsup.cookplan.data.local.RecipeEntity
 import com.tecsup.cookplan.notifications.CookPlanNotificationHelper
+import com.tecsup.cookplan.ui.components.CookPlanHero
 import com.tecsup.cookplan.ui.components.RecipeImage
 import com.tecsup.cookplan.viewmodel.PlannerViewModel
 import com.tecsup.cookplan.viewmodel.PlannerViewModelFactory
@@ -99,23 +100,14 @@ fun PlannerScreen() {
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-                Icon(
-                    Icons.Default.CalendarToday,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(10.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Column {
-                Text("Mi plan semanal", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text(range, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
+        CookPlanHero(
+            title = "Mi plan semanal",
+            subtitle = range,
+            icon = Icons.Default.CalendarToday,
+            badge = "Recordatorios"
+        )
 
-        Spacer(modifier = Modifier.height(22.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         DIAS.forEachIndexed { index, day ->
             val date = monday.plusDays(index.toLong())
@@ -148,6 +140,7 @@ fun PlannerScreen() {
 
         AlertDialog(
             onDismissRequest = { dialogTarget = null },
+            shape = RoundedCornerShape(28.dp),
             title = {
                 Column {
                     Text("$day · $mealType")
@@ -287,14 +280,14 @@ fun DayRow(
     onAddMeal: (String) -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (esHoy) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-            else MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = if (esHoy) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.62f)
+            else MaterialTheme.colorScheme.surfaceContainerLowest
         ),
-        elevation = if (esHoy) CardDefaults.cardElevation(4.dp) else CardDefaults.cardElevation(0.dp)
+        elevation = if (esHoy) CardDefaults.cardElevation(7.dp) else CardDefaults.cardElevation(2.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -345,9 +338,9 @@ fun RowScope.MealSlot(label: String, recipeName: String?, onClick: () -> Unit) {
             onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(68.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = if (isSet) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f) else Color.Transparent,
+                .height(76.dp),
+            shape = RoundedCornerShape(18.dp),
+            color = if (isSet) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f) else MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
             border = if (isSet) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)) {

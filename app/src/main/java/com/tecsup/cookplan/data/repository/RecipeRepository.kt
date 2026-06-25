@@ -6,12 +6,15 @@ import com.tecsup.cookplan.data.firebase.FirestoreSyncRepository
 import com.tecsup.cookplan.data.remote.MealApiService
 import com.tecsup.cookplan.data.remote.MealSearchQueryTranslator
 import com.tecsup.cookplan.data.remote.dto.MealDto
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
     private val apiService: MealApiService,
-    private val firestoreSyncRepository: FirestoreSyncRepository
+    private val firestoreSyncRepository: FirestoreSyncRepository,
+    private val syncScope: CoroutineScope
 ) {
     val allRecipes: Flow<List<RecipeEntity>> = recipeDao.getAllRecipes()
 
@@ -19,19 +22,25 @@ class RecipeRepository(
 
     suspend fun insertRecipe(recipe: RecipeEntity): Long {
         val id = recipeDao.insertRecipe(recipe)
-        firestoreSyncRepository.saveRecipe(recipe.copy(id = id))
+        syncScope.launch {
+            runCatching { firestoreSyncRepository.saveRecipe(recipe.copy(id = id)) }
+        }
         return id
     }
 
     suspend fun updateRecipe(recipe: RecipeEntity): Int {
         val updated = recipeDao.updateRecipe(recipe)
-        firestoreSyncRepository.saveRecipe(recipe)
+        syncScope.launch {
+            runCatching { firestoreSyncRepository.saveRecipe(recipe) }
+        }
         return updated
     }
 
     suspend fun deleteRecipe(recipe: RecipeEntity): Int {
         val deleted = recipeDao.deleteRecipe(recipe)
-        firestoreSyncRepository.deleteRecipe(recipe.id)
+        syncScope.launch {
+            runCatching { firestoreSyncRepository.deleteRecipe(recipe.id) }
+        }
         return deleted
     }
 

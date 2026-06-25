@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -62,12 +63,22 @@ fun AppNavigation(
                 enter = slideInVertically { it },
                 exit = slideOutVertically { it }
             ) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    tonalElevation = 8.dp
+                ) {
                     items.forEach { screen ->
                         NavigationBarItem(
                             icon = { screen.icon?.let { Icon(it, contentDescription = screen.title) } },
                             label = { Text(screen.title) },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.secondary,
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
                             onClick = {
                                 navController.navigate(screen.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
@@ -157,7 +168,13 @@ fun AppNavigation(
                 val argId = backStackEntry.arguments?.getLong("recipeId") ?: -1L
                 RecipeFormScreen(
                     recipeId = if (argId == -1L) null else argId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onSaved = {
+                        navController.navigate(AppRoutes.Planner.route) {
+                            popUpTo(AppRoutes.Recipes.route)
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
 

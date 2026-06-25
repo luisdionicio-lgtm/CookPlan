@@ -41,13 +41,18 @@ class RecipeFormViewModel(private val repository: RecipeRepository) : ViewModel(
     fun onInstructionsChange(v: String) { _uiState.value = _uiState.value.copy(instructions = v, instructionsError = false) }
     fun onImageUrlChange(v: String) { _uiState.value = _uiState.value.copy(imageUrl = v) }
     fun onImageSelected(option: RecipeImageOption) {
-        val current = _uiState.value
-        _uiState.value = current.copy(
+        _uiState.value = _uiState.value.copy(
             imageUrl = option.key,
-            name = current.name.ifBlank { option.title },
-            category = current.category.ifBlank { option.category },
+            name = option.title,
+            category = option.category,
+            ingredients = option.ingredients,
+            instructions = option.instructions,
+            timeMinutes = option.timeMinutes.toString(),
+            servings = option.servings.toString(),
             nameError = false,
-            categoryError = false
+            categoryError = false,
+            ingredientsError = false,
+            instructionsError = false
         )
     }
 

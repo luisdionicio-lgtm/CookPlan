@@ -3,11 +3,14 @@ package com.tecsup.cookplan.data.repository
 import com.tecsup.cookplan.data.local.MealPlanDao
 import com.tecsup.cookplan.data.local.MealPlanEntity
 import com.tecsup.cookplan.data.firebase.FirestoreSyncRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 class MealPlanRepository(
     private val mealPlanDao: MealPlanDao,
-    private val firestoreSyncRepository: FirestoreSyncRepository
+    private val firestoreSyncRepository: FirestoreSyncRepository,
+    private val syncScope: CoroutineScope
 ) {
     fun getAllPlans(): Flow<List<MealPlanEntity>> = mealPlanDao.getAllPlans()
 
@@ -17,14 +20,20 @@ class MealPlanRepository(
     // en esa casilla, la reemplaza, garantizando una sola receta por espacio (RF-07).
     suspend fun assignMeal(mealPlan: MealPlanEntity) {
         mealPlanDao.removeMealFromPlan(mealPlan.dayOfWeek, mealPlan.mealType)
-        firestoreSyncRepository.deleteMealSlot(mealPlan.dayOfWeek, mealPlan.mealType)
         val id = mealPlanDao.insertMealPlan(mealPlan)
-        firestoreSyncRepository.saveMealPlan(mealPlan.copy(id = id))
+        syncScope.launch {
+            runCatching {
+                firestoreSyncRepository.deleteMealSlot(mealPlan.dayOfWeek, mealPlan.mealType)
+                firestoreSyncRepository.saveMealPlan(mealPlan.copy(id = id))
+            }
+        }
     }
 
     suspend fun removeMealFromPlan(day: String, type: String): Int {
         val removed = mealPlanDao.removeMealFromPlan(day, type)
-        firestoreSyncRepository.deleteMealSlot(day, type)
+        syncScope.launch {
+            runCatching { firestoreSyncRepository.deleteMealSlot(day, type) }
+        }
         return removed
     }
 

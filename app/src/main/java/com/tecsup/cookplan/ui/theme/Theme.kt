@@ -1,6 +1,5 @@
 package com.tecsup.cookplan.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -58,7 +57,7 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun CookPlanTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     // Usamos siempre la paleta de CookPlan (sin Material You / dynamic color)
     // para que la marca se vea igual en todos los dispositivos.
     dynamicColor: Boolean = false,
