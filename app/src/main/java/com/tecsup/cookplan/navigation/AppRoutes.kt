@@ -26,4 +26,8 @@ sealed class AppRoutes(val route: String, val title: String = "", val icon: Imag
     object Planner : AppRoutes("planner", "Planificador", Icons.Default.CalendarMonth)
 
     object Explore : AppRoutes("explore", "Explorar", Icons.Default.Explore)
+
+    object Login : AppRoutes("login")
+
+    object Register : AppRoutes("register")
 }
