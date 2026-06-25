@@ -85,6 +85,23 @@ object CookPlanNotificationHelper {
         )
     }
 
+    fun scheduleMealReminderAt(
+        context: Context,
+        recipeId: Long,
+        recipeName: String,
+        mealType: String,
+        triggerAtMillis: Long
+    ) {
+        val delayMillis = (triggerAtMillis - System.currentTimeMillis()).coerceAtLeast(1_000L)
+        scheduleMealReminder(
+            context = context,
+            recipeId = recipeId,
+            recipeName = recipeName,
+            mealType = mealType,
+            delayMillis = delayMillis
+        )
+    }
+
     fun showPushNotification(
         context: Context,
         title: String,

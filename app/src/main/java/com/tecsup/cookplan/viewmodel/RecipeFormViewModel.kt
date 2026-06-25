@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.tecsup.cookplan.data.local.RecipeEntity
+import com.tecsup.cookplan.data.local.RecipeImageOption
 import com.tecsup.cookplan.data.repository.RecipeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +40,16 @@ class RecipeFormViewModel(private val repository: RecipeRepository) : ViewModel(
     fun onIngredientsChange(v: String) { _uiState.value = _uiState.value.copy(ingredients = v, ingredientsError = false) }
     fun onInstructionsChange(v: String) { _uiState.value = _uiState.value.copy(instructions = v, instructionsError = false) }
     fun onImageUrlChange(v: String) { _uiState.value = _uiState.value.copy(imageUrl = v) }
+    fun onImageSelected(option: RecipeImageOption) {
+        val current = _uiState.value
+        _uiState.value = current.copy(
+            imageUrl = option.key,
+            name = current.name.ifBlank { option.title },
+            category = current.category.ifBlank { option.category },
+            nameError = false,
+            categoryError = false
+        )
+    }
 
     // Solo dígitos (o vacío) en los campos numéricos.
     fun onTimeChange(v: String) { if (v.all { it.isDigit() }) _uiState.value = _uiState.value.copy(timeMinutes = v) }

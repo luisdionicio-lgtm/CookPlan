@@ -16,6 +16,22 @@ class FirestoreSyncRepository(
 
     fun hasUser(): Boolean = uid != null
 
+    suspend fun saveCurrentUserProfile(email: String?) {
+        val userId = uid ?: return
+        val data = mutableMapOf<String, Any?>(
+            "uid" to userId,
+            "createdOrUpdatedAt" to Timestamp.now()
+        )
+        if (!email.isNullOrBlank()) {
+            data["email"] = email
+        }
+
+        firestore.collection("users")
+            .document(userId)
+            .set(data, com.google.firebase.firestore.SetOptions.merge())
+            .await()
+    }
+
     suspend fun saveRecipe(recipe: RecipeEntity) {
         val userId = uid ?: return
         firestore.collection("users")

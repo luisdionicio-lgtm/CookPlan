@@ -33,10 +33,11 @@ class AuthViewModel(
             _uiState.value = _uiState.value.copy(error = "Completa correo y contraseña.")
             return
         }
+
         _uiState.value = AuthUiState(isLoading = true, isLoggedIn = repository.isLoggedIn())
         repository.login(correo, password) { result ->
             result.fold(
-                onSuccess = { syncAfterAuth(onSuccess) },
+                onSuccess = { enterAppAndSyncInBackground(onSuccess) },
                 onFailure = {
                     _uiState.value = AuthUiState(
                         error = mapError(it),
@@ -61,10 +62,18 @@ class AuthViewModel(
             _uiState.value = _uiState.value.copy(error = "Las contraseñas no coinciden.")
             return
         }
+
         _uiState.value = AuthUiState(isLoading = true, isLoggedIn = repository.isLoggedIn())
         repository.register(correo, password) { result ->
             result.fold(
-                onSuccess = { syncAfterAuth(onSuccess) },
+                onSuccess = {
+                    viewModelScope.launch {
+                        runCatching { syncRepository.createUserProfile(correo) }
+                        repository.logout()
+                        _uiState.value = AuthUiState(isLoggedIn = false)
+                        onSuccess()
+                    }
+                },
                 onFailure = {
                     _uiState.value = AuthUiState(
                         error = mapError(it),
@@ -83,14 +92,16 @@ class AuthViewModel(
     }
 
     fun clearError() {
-        if (_uiState.value.error != null) _uiState.value = _uiState.value.copy(error = null)
+        if (_uiState.value.error != null) {
+            _uiState.value = _uiState.value.copy(error = null)
+        }
     }
 
-    private fun syncAfterAuth(onSuccess: () -> Unit) {
+    private fun enterAppAndSyncInBackground(onSuccess: () -> Unit) {
+        _uiState.value = AuthUiState(isLoggedIn = true)
+        onSuccess()
         viewModelScope.launch {
             runCatching { syncRepository.syncUserData() }
-            _uiState.value = AuthUiState(isLoggedIn = true)
-            onSuccess()
         }
     }
 

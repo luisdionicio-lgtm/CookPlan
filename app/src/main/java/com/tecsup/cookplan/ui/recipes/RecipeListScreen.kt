@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -27,9 +26,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
 import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.data.local.RecipeEntity
+import com.tecsup.cookplan.ui.components.RecipeImage
 import com.tecsup.cookplan.viewmodel.RecipeListViewModel
 import com.tecsup.cookplan.viewmodel.RecipeListViewModelFactory
 
@@ -195,27 +194,12 @@ private fun AdvancedRecipeCard(recipe: RecipeEntity, onClick: () -> Unit) {
                     .width(120.dp)
                     .fillMaxHeight()
             ) {
-                if (!recipe.imageUrl.isNullOrBlank()) {
-                    AsyncImage(
-                        model = recipe.imageUrl,
-                        contentDescription = recipe.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.secondaryContainer)
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Restaurant, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
-                    }
-                }
+                RecipeImage(
+                    imageRef = recipe.imageUrl,
+                    contentDescription = recipe.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Column(

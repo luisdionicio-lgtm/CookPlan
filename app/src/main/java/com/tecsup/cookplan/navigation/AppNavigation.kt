@@ -111,8 +111,8 @@ fun AppNavigation(
             ) {
                 RegisterScreen(
                     onRegistered = {
-                        navController.navigate(AppRoutes.Recipes.route) {
-                            popUpTo(AppRoutes.Login.route) { inclusive = true }
+                        navController.navigate(AppRoutes.Login.route) {
+                            popUpTo(AppRoutes.Register.route) { inclusive = true }
                             launchSingleTop = true
                         }
                     },

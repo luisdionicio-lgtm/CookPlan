@@ -1,5 +1,6 @@
 package com.tecsup.cookplan.ui.detail
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,10 +9,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,11 +27,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
 import com.tecsup.cookplan.CookPlanApplication
 import com.tecsup.cookplan.notifications.CookPlanNotificationHelper
+import com.tecsup.cookplan.ui.components.RecipeImage
 import com.tecsup.cookplan.viewmodel.RecipeDetailViewModel
 import com.tecsup.cookplan.viewmodel.RecipeDetailViewModelFactory
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 
 private val DIAS = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
 private val COMIDAS = listOf("Desayuno", "Almuerzo", "Cena")
@@ -88,28 +93,12 @@ fun RecipeDetailScreen(
                         .fillMaxWidth()
                         .height(220.dp)
                 ) {
-                    if (!recipe.imageUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = recipe.imageUrl,
-                            contentDescription = recipe.name,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Restaurant,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(64.dp)
-                            )
-                        }
-                    }
+                    RecipeImage(
+                        imageRef = recipe.imageUrl,
+                        contentDescription = recipe.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
 
                     Surface(
                         shape = CircleShape,
@@ -228,6 +217,8 @@ fun RecipeDetailScreen(
     if (showAssignDialog) {
         var selectedDay by remember { mutableStateOf(DIAS.first()) }
         var selectedMeal by remember { mutableStateOf(COMIDAS.first()) }
+        val timePickerState = rememberTimePickerState(initialHour = 13, initialMinute = 0, is24Hour = true)
+        var showClock by remember { mutableStateOf(false) }
 
         AlertDialog(
             onDismissRequest = { showAssignDialog = false },
@@ -257,6 +248,21 @@ fun RecipeDetailScreen(
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedButton(
+                        onClick = { showClock = !showClock },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Alarm, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Recordar a las %02d:%02d".format(timePickerState.hour, timePickerState.minute))
+                    }
+                    AnimatedVisibility(visible = showClock) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TimePicker(state = timePickerState)
+                        }
+                    }
                 }
             },
             confirmButton = {
@@ -264,11 +270,12 @@ fun RecipeDetailScreen(
                     viewModel.assignToPlan(selectedDay, selectedMeal) {
                         assignMessage = "Asignado: $selectedMeal del $selectedDay"
                         uiState.recipe?.let { recipe ->
-                            CookPlanNotificationHelper.scheduleMealReminder(
+                            CookPlanNotificationHelper.scheduleMealReminderAt(
                                 context = context,
                                 recipeId = recipe.id,
                                 recipeName = recipe.name,
-                                mealType = selectedMeal
+                                mealType = selectedMeal,
+                                triggerAtMillis = nextReminderMillis(selectedDay, timePickerState.hour, timePickerState.minute)
                             )
                         }
                     }
@@ -284,6 +291,16 @@ fun RecipeDetailScreen(
             }
         )
     }
+}
+
+private fun nextReminderMillis(day: String, hour: Int, minute: Int): Long {
+    val dayIndex = DIAS.indexOf(day).coerceAtLeast(0)
+    val monday = LocalDate.now().minusDays((LocalDate.now().dayOfWeek.value - 1).toLong())
+    var dateTime = LocalDateTime.of(monday.plusDays(dayIndex.toLong()), LocalTime.of(hour, minute))
+    if (dateTime.isBefore(LocalDateTime.now())) {
+        dateTime = dateTime.plusWeeks(1)
+    }
+    return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 }
 
 @Composable

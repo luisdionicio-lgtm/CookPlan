@@ -16,6 +16,6 @@ class CookPlanApplication : Application() {
 
     val recipeRepository by lazy { RecipeRepository(database.recipeDao(), apiService, firestoreSyncRepository) }
     val mealPlanRepository by lazy { MealPlanRepository(database.mealPlanDao(), firestoreSyncRepository) }
-    val syncRepository by lazy { CookPlanSyncRepository(recipeRepository, mealPlanRepository) }
+    val syncRepository by lazy { CookPlanSyncRepository(recipeRepository, mealPlanRepository, firestoreSyncRepository) }
     val authRepository by lazy { AuthRepository() }
 }
