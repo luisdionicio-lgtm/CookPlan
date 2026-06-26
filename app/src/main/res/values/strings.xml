@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CookPlan</string>
+    <string name="default_notification_channel_id">meal_reminders</string>
 </resources>

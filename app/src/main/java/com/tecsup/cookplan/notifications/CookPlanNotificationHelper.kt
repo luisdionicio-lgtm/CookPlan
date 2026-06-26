@@ -66,22 +66,12 @@ object CookPlanNotificationHelper {
         mealType: String,
         delayMillis: Long = DEFAULT_REMINDER_DELAY_MILLIS
     ) {
-        val intent = Intent(context, MealReminderReceiver::class.java).apply {
-            putExtra(EXTRA_RECIPE_ID, recipeId)
-            putExtra(EXTRA_RECIPE_NAME, recipeName)
-            putExtra(EXTRA_MEAL_TYPE, mealType)
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            ("meal-$recipeId-$mealType").hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val alarmManager = context.getSystemService(AlarmManager::class.java)
-        alarmManager.set(
-            AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + delayMillis,
-            pendingIntent
+        scheduleMealReminderInternal(
+            context = context,
+            recipeId = recipeId,
+            recipeName = recipeName,
+            mealType = mealType,
+            triggerAtMillis = System.currentTimeMillis() + delayMillis
         )
     }
 
@@ -92,14 +82,39 @@ object CookPlanNotificationHelper {
         mealType: String,
         triggerAtMillis: Long
     ) {
-        val delayMillis = (triggerAtMillis - System.currentTimeMillis()).coerceAtLeast(1_000L)
-        scheduleMealReminder(
+        scheduleMealReminderInternal(
             context = context,
             recipeId = recipeId,
             recipeName = recipeName,
             mealType = mealType,
-            delayMillis = delayMillis
+            triggerAtMillis = triggerAtMillis.coerceAtLeast(System.currentTimeMillis() + 1_000L)
         )
+    }
+
+    private fun scheduleMealReminderInternal(
+        context: Context,
+        recipeId: Long,
+        recipeName: String,
+        mealType: String,
+        triggerAtMillis: Long
+    ) {
+        val intent = Intent(context, MealReminderReceiver::class.java).apply {
+            putExtra(EXTRA_RECIPE_ID, recipeId)
+            putExtra(EXTRA_RECIPE_NAME, recipeName)
+            putExtra(EXTRA_MEAL_TYPE, mealType)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            ("meal-$recipeId-$mealType-$triggerAtMillis").hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmManager = context.getSystemService(AlarmManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        }
     }
 
     fun showPushNotification(

@@ -126,7 +126,12 @@ fun PlannerScreen() {
 
     dialogTarget?.let { (day, mealType) ->
         val current = uiState.plan[day]?.get(mealType)
-        var selectedRecipe by remember(day, mealType) { mutableStateOf<RecipeEntity?>(null) }
+        var selectedRecipe by remember(day, mealType, current, uiState.recipes) {
+            mutableStateOf(
+                uiState.recipes.firstOrNull { it.id == current?.recipeId }
+                    ?: uiState.recipes.firstOrNull()
+            )
+        }
         val timePickerState = rememberTimePickerState(
             initialHour = when (mealType) {
                 "Desayuno" -> 8
